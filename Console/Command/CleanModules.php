@@ -28,7 +28,7 @@ class CleanModules extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $configFile = $this->directoryList->getRoot().'/app/etc/config.php';
-        $config = include $configFile;
+        $config = include $configFile; // phpcs:ignore
         $configContents = file_get_contents($configFile);
 
         foreach ($config['modules'] as $moduleName => $moduleStatus) {

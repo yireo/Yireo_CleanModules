@@ -28,7 +28,7 @@ class CheckModules extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $configFile = $this->directoryList->getRoot().'/app/etc/config.php';
-        $config = include $configFile;
+        $config = include $configFile; // phpcs:ignore
         $allModules = $this->moduleList->getAll();
 
         foreach ($config['modules'] as $moduleName => $moduleStatus) {
