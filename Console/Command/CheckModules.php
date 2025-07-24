@@ -14,7 +14,7 @@ class CheckModules extends Command
     public function __construct(
         private DirectoryList $directoryList,
         private ModuleList $moduleList,
-        string $name = null) {
+        ?string $name = null) {
         parent::__construct($name);
     }
 
