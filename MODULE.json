@@ -1,5 +1,7 @@
 {
     "module_name": "Yireo_CleanModules",
     "composer_name": "yireo/magento2-clean-modules",
-    "sequence": []
+    "sequence": [],
+    "phpcs_severity": "9",
+    "phpstan_level": "6"
 }
