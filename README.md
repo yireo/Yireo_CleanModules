@@ -21,6 +21,14 @@ Next, enable this module:
 bin/magento module:enable Yireo_CleanModules
 ```
 
+### Usage
+```bash
+bin/magento yireo:modules:check            # Lists enabled modules that do not exist (exit code 1 if any)
+bin/magento yireo:modules:clean --dry-run  # Shows which modules would be disabled
+bin/magento yireo:modules:clean            # Asks for confirmation, backs up app/etc/config.php and disables missing modules
+bin/magento yireo:modules:clean --force    # Skips the confirmation and the safety check on core modules or more than 10 modules
+```
+
 ## Current status
 
 <!-- badges.test.start -->
