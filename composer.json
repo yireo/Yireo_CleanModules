@@ -1,7 +1,7 @@
 {
     "name": "yireo/magento2-clean-modules",
     "license": "OSL-3.0",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "type": "magento2-module",
     "description": "Magento 2 module to remove invalid entries from app/etc/config.php",
     "keywords": [
