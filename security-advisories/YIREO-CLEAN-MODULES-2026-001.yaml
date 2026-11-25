@@ -1,0 +1,34 @@
+schema_version: "1.6.0"
+id: YIREO-CLEAN-MODULES-2026-001
+published: "2026-11-25T00:00:00Z"
+modified: "2026-11-25T00:00:00Z"
+aliases: []
+summary: Storefront CSP violation reports, including password reset tokens, sent to a third-party endpoint
+details: >
+  The module shipped an etc/config.xml that set the storefront CSP report_uri to a third-party
+  uriports.com endpoint. Every CSP violation on the storefront was reported there, including the full
+  page URL, which can contain sensitive data such as customer password reset tokens. Whoever controls
+  that endpoint could use such a token to take over a customer account. The module also shipped an
+  etc/csp_whitelist.xml that globally allowed Google, Google Tag Manager and PayPal (sandbox) hosts in
+  script-src, weakening the storefront Content Security Policy. Neither file is needed for this CLI
+  module. Version 0.0.3 removes both files. After upgrading, flush the Magento cache and check that
+  csp/mode/storefront/report_uri is not still set to the uriports.com endpoint in core_config_data.
+severity:
+  - type: CVSS_V3
+    score: "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N"
+affected:
+  - package:
+      ecosystem: Packagist
+      name: yireo/magento2-clean-modules
+    ranges:
+      - type: ECOSYSTEM
+        events:
+          - introduced: "0"
+          - fixed: "0.0.3"
+references:
+  - type: PACKAGE
+    url: https://github.com/yireo/Yireo_CleanModules
+database_specific:
+  cwe_ids:
+    - CWE-359
+    - CWE-200
