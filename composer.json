@@ -9,12 +9,6 @@
         "Magento 2",
         "Yireo"
     ],
-    "authors": [
-        {
-            "name": "Jisse Reitsma (Yireo)",
-            "email": "jisse@yireo.com"
-        }
-    ],
     "require": {
         "magento/framework": "^103.0.6|^104.0",
         "php": ">=8.2 <8.6"
@@ -44,5 +38,8 @@
             "type": "other",
             "url": "https://www.buymeacoffee.com/jissereitsma"
         }
-    ]
+    ],
+    "require-dev": {
+        "yireo/magento2-integration-test-helper": "~0.0"
+    }
 }
