@@ -35,8 +35,14 @@ class CleanModules extends Command
     protected function configure()
     {
         $this->setName('yireo:modules:clean');
-        $this->setDescription('Disable all modules in app/etc/config.php that do not exist');
+        $this->setDescription('Disable (or remove) all modules in app/etc/config.php that do not exist');
         $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only show which modules would be disabled');
+        $this->addOption(
+            'remove',
+            null,
+            InputOption::VALUE_NONE,
+            'Remove missing modules from app/etc/config.php instead of disabling them'
+        );
         $this->addOption(
             'force',
             null,
@@ -55,7 +61,9 @@ class CleanModules extends Command
             return Command::FAILURE;
         }
 
-        $missingModules = $this->moduleConfig->getMissingModules($modules);
+        $remove = (bool)$input->getOption('remove');
+        $action = $remove ? 'remove' : 'disable';
+        $missingModules = $this->moduleConfig->getMissingModules($modules, $remove);
         if (empty($missingModules)) {
             $output->writeln('<info>No missing modules found</info>');
             return Command::SUCCESS;
@@ -71,16 +79,21 @@ class CleanModules extends Command
         }
 
         $force = (bool)$input->getOption('force');
-        if (!$force && !$this->isSafeToDisable($missingModules, $output)) {
+        if (!$force && !$this->isSafeToChange($missingModules, $action, $output)) {
             return Command::FAILURE;
         }
 
-        if (!$force && !$this->confirm($input, $output, count($missingModules))) {
+        if (!$force && !$this->confirm($input, $output, count($missingModules), $remove)) {
             $output->writeln('<error>Aborted: app/etc/config.php was not modified</error>');
             return Command::FAILURE;
         }
 
         foreach ($missingModules as $moduleName) {
+            if ($remove) {
+                unset($modules[$moduleName]);
+                continue;
+            }
+
             $modules[$moduleName] = 0;
         }
 
@@ -94,7 +107,8 @@ class CleanModules extends Command
         }
 
         foreach ($missingModules as $moduleName) {
-            $output->writeln('<info>Disabled module: ' . OutputFormatter::escape($moduleName) . '</info>');
+            $output->writeln('<info>' . ($remove ? 'Removed' : 'Disabled') . ' module: '
+                . OutputFormatter::escape($moduleName) . '</info>');
         }
 
         return Command::SUCCESS;
@@ -103,17 +117,17 @@ class CleanModules extends Command
     /**
      * @param string[] $missingModules
      */
-    private function isSafeToDisable(array $missingModules, OutputInterface $output): bool
+    private function isSafeToChange(array $missingModules, string $action, OutputInterface $output): bool
     {
         $coreModules = array_filter($missingModules, fn (string $moduleName) => str_starts_with($moduleName, 'Magento_'));
         if (!empty($coreModules)) {
-            $output->writeln('<error>Refusing to disable core modules, use --force to override: '
+            $output->writeln('<error>Refusing to ' . $action . ' core modules, use --force to override: '
                 . OutputFormatter::escape(implode(', ', $coreModules)) . '</error>');
             return false;
         }
 
         if (count($missingModules) > self::MAX_MODULES_WITHOUT_FORCE) {
-            $output->writeln('<error>Refusing to disable more than ' . self::MAX_MODULES_WITHOUT_FORCE
+            $output->writeln('<error>Refusing to ' . $action . ' more than ' . self::MAX_MODULES_WITHOUT_FORCE
                 . ' modules, use --force to override</error>');
             return false;
         }
@@ -121,14 +135,17 @@ class CleanModules extends Command
         return true;
     }
 
-    private function confirm(InputInterface $input, OutputInterface $output, int $count): bool
+    private function confirm(InputInterface $input, OutputInterface $output, int $count, bool $remove): bool
     {
         if (!$input->isInteractive()) {
             $output->writeln('<error>Non-interactive mode requires --force</error>');
             return false;
         }
 
-        $question = new ConfirmationQuestion('Disable ' . $count . ' module(s) in app/etc/config.php? [y/N] ', false);
+        $text = $remove
+            ? 'Remove ' . $count . ' module(s) from app/etc/config.php? [y/N] '
+            : 'Disable ' . $count . ' module(s) in app/etc/config.php? [y/N] ';
+        $question = new ConfirmationQuestion($text, false);
 
         return (bool)(new QuestionHelper())->ask($input, $output, $question);
     }

@@ -144,6 +144,59 @@ class CleanModulesTest extends AbstractCommandTestCase
         $this->assertStringContainsString('Refusing to disable more than', $commandTester->getDisplay());
     }
 
+    public function testRemoveDeletesMissingModules(): void
+    {
+        $this->expectSavedModules(['Magento_Store' => 1]);
+
+        $commandTester = $this->execute(
+            ['Magento_Store' => 1, 'Yireo_Missing' => 1, 'Yireo_OldMissing' => 0],
+            ['--remove' => true, '--force' => true]
+        );
+
+        $this->assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        $this->assertStringContainsString('Removed module: Yireo_Missing', $commandTester->getDisplay());
+        $this->assertStringContainsString('Removed module: Yireo_OldMissing', $commandTester->getDisplay());
+        $this->assertCount(1, $this->getBackupFiles());
+    }
+
+    public function testRemoveKeepsExistingDisabledModules(): void
+    {
+        $this->expectSavedModules(['Magento_Store' => 0]);
+
+        $commandTester = $this->execute(
+            ['Magento_Store' => 0, 'Yireo_Missing' => 1],
+            ['--remove' => true, '--force' => true]
+        );
+
+        $this->assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+    }
+
+    public function testRemoveDryRunDoesNotWrite(): void
+    {
+        $this->writer->expects($this->never())->method('saveConfig');
+
+        $commandTester = $this->execute(['Yireo_OldMissing' => 0], ['--remove' => true, '--dry-run' => true]);
+
+        $this->assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        $this->assertStringContainsString('Module does not exist: Yireo_OldMissing', $commandTester->getDisplay());
+        $this->assertSame([], $this->getBackupFiles());
+    }
+
+    public function testRemoveRefusesCoreModuleWithoutForce(): void
+    {
+        $this->writer->expects($this->never())->method('saveConfig');
+
+        $commandTester = $this->execute(
+            ['Magento_DoesNotExist' => 0],
+            ['--remove' => true],
+            ['interactive' => true],
+            ['y']
+        );
+
+        $this->assertSame(Command::FAILURE, $commandTester->getStatusCode());
+        $this->assertStringContainsString('Refusing to remove core modules', $commandTester->getDisplay());
+    }
+
     public function testFailsWithInvalidConfig(): void
     {
         $this->writer->expects($this->never())->method('saveConfig');

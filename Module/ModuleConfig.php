@@ -43,12 +43,16 @@ class ModuleConfig
      * @param array<string, int> $modules
      * @return string[]
      */
-    public function getMissingModules(array $modules): array
+    public function getMissingModules(array $modules, bool $includeDisabled = false): array
     {
         $registeredModules = $this->componentRegistrar->getPaths(ComponentRegistrar::MODULE);
         $missingModules = [];
         foreach ($modules as $moduleName => $moduleStatus) {
-            if ($moduleStatus === 1 && !isset($registeredModules[$moduleName])) {
+            if (!$includeDisabled && $moduleStatus !== 1) {
+                continue;
+            }
+
+            if (!isset($registeredModules[$moduleName])) {
                 $missingModules[] = $moduleName;
             }
         }

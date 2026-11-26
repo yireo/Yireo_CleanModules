@@ -30,6 +30,7 @@ bin/magento module:enable Yireo_CleanModules
 bin/magento yireo:modules:check            # Lists enabled modules that do not exist (exit code 1 if any)
 bin/magento yireo:modules:clean --dry-run  # Shows which modules would be disabled
 bin/magento yireo:modules:clean            # Asks for confirmation, backs up app/etc/config.php and disables missing modules
+bin/magento yireo:modules:clean --remove   # Removes missing modules (enabled or disabled) from app/etc/config.php instead of disabling them
 bin/magento yireo:modules:clean --force    # Skips the confirmation and the safety check on core modules or more than 10 modules
 ```
 
